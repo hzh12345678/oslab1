@@ -322,6 +322,8 @@ fork(void)
   np->state = RUNNABLE;
   release(&np->lock);
 
+  np->tracemask = p->tracemask;
+
   return pid;
 }
 
@@ -685,4 +687,18 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+uint64
+count_free_proc(void) {
+  struct proc *p;
+  uint64 free_count = 0;
+  for (p = proc; p < &proc[NPROC]; p++) {
+    acquire(&p->lock);
+    if (p->state != UNUSED) {
+      free_count++;
+    }
+    release(&p->lock);
+  }
+  return free_count;
 }
