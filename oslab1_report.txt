@@ -1,0 +1,14 @@
+                       Oslab1实验报告
+实验一：sleep
+在sleep实验中，我们实现了一条命令，它的作用是等待一会，要求如果忘记传递参数要输出错误信息，直接在程序中检查argc是否为2，若不是，输出错误信息并退出，然后使用atoi函数得到sleep的参数，使用已经实现好的sleep函数，然后直接exit即可。然后将sleep添加到Makefile中即可。
+问题：经过同学的提醒，我将fprintf输出错误信息的fd修改为2，即标准错误输出流，修改后更符合程序的语义。
+实验二：pingpong
+在pingpong实验中，我们通过pipe实现了父进程和子进程的通讯，创建两个pipe分别为父进程对子进程和子进程到父进程的pipe，注意在0端read，1端write，fork创建子进程后，通过检测其返回值，可以区分父进程和子进程，通过getpid函数得到process id，然后在父进程中向pipe写一个byte，并等待read一个byte，在子进程中，从pipe等待read一个byte，write一个byte，如果父进程和子进程都收到了read的byte，则print出其process id和received ping(pong)。最后配好Makefile即可。
+问题：在本实验代码中，如果仅完成实验目标，我们不需要对pipe的两端做close，但是阅读xv6书后，我发现它的代码会对pipe的两端做close操作，所以我也对pipe的两端进行了close。
+实验三：trace
+在trace实验中，按照提供的教程，配好Makefile，在uesr.h中加上trace，在usys.pl中加上entry，在这里syscall.h中已经是有完整的number表，在sysproc.c中加上sys_trace函数，在proc.h中给proc结构加上tracemask变量，在fork函数中增加复制tracemask的代码，在syscall函数中增加输出trace的代码即可。
+问题：容易忘记在proc的构造函数中加上tracemask变量的初始化（虽然好像不加初始化为0也没问题，他好像是自己初始化是0）
+实验四：sysinfo
+在sysinfo实验中，先配好Makefile，在user.h中加上sysinfo的结构声明和函数，在kalloc.c中写一个函数kfree_mem计算free memory，在proc.c中写count_free_proc函数计算进程数，注意到函数需要在def.h中声明，我们需要把函数声明写进去。然后利用上面的函数，写出sysinfo函数，构造出当前的sys_info，利用上面的两个函数得到信息，并复制到用户态即可。
+问题：容易忽略sysproc.c中没有include sysinfo.h文件，之后问同学发现了问题。
+其他问题：在虚拟机的git提交时，我想要把git的origin仓库修改为自己的仓库。然后出现了git无法识别config中信息的问题，导致我无法每个任务分别提交，之后在config文件中把一个参数修改成true后问题解决，直接提交了完整版。
