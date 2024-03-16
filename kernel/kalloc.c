@@ -82,15 +82,15 @@ kalloc(void)
 }
 
 uint64
-kfree_mem(void) {
+kfree_mem(void) {//return the number of free memory
   struct run *r;
   uint64 freemem = 0;
-  acquire(&kmem.lock);
+  acquire(&kmem.lock);//lock
   r = kmem.freelist;
   while (r) {
     freemem += PGSIZE;
-    r = r->next;
+    r = r->next;  //traver the list
   }
-  release(&kmem.lock);
+  release(&kmem.lock);//unlock
   return freemem;
 }

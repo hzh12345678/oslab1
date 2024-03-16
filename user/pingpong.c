@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     pipe(pipe2);//child to father
     int ret = fork();
     if ( ret == 0 ) {
-        pid = getpid();
+        pid = getpid();//get process id
         close(pipe1[1]);
         close(pipe2[0]);
         read(pipe1[0], buf, 1);

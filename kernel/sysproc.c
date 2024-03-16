@@ -116,11 +116,11 @@ uint64
 sys_sysinfo(void) {
   struct proc *my_proc = myproc();
   uint64 addr;
-  argaddr(0, &addr);
-  struct sysinfo s;
-  s.freemem = kfree_mem();
-  s.nproc = count_free_proc();
-  if (copyout(my_proc->pagetable, addr, (char *)&s, sizeof (s)) < 0) {
+  argaddr(0, &addr);//get the buffer address
+  struct sysinfo s;//construct the sysinfo in kernel
+  s.freemem = kfree_mem();//get free memory
+  s.nproc = count_free_proc();//get number of not UNUSED process
+  if (copyout(my_proc->pagetable, addr, (char *)&s, sizeof (s)) < 0) {//copy to user
     return -1;
   }
   return 0;
