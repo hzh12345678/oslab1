@@ -1,4 +1,4 @@
-Oslab2实验报告
+Oslab2-traps实验报告
 实验1：backtrace
 backtrace实验要求在printf.c文件中实现一个backtrace函数，它的作用是在调用后输出当前的栈的函数返回地址，只需要从r_fp指针位置开始，依次输出在fp-8位置的地址，跳转到fp-16位置，直到跳出当前的page即可。
 实验2：alarm
