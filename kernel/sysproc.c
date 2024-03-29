@@ -141,5 +141,9 @@ sys_sigalarm(void) {
 
 uint64
 sys_sigreturn(void) {
-  return 0;
+  struct proc* my_proc = myproc();
+  my_proc->in_alarm = 0;//set in_alarm to tell not in alarm
+  *my_proc->trapframe = *my_proc->alarmframe;//restore trapframe
+  my_proc->ticks_since_last_alarm = 0;//reset ticks
+  return (*my_proc->trapframe).a0;
 }

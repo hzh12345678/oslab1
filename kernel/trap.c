@@ -79,7 +79,9 @@ usertrap(void)
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2) {
     p->ticks_since_last_alarm += 1;
-    if (p->alarm_interval != 0 && p->ticks_since_last_alarm == p->alarm_interval) {
+    if (p->in_alarm == 0 && p->alarm_interval != 0 && p->ticks_since_last_alarm == p->alarm_interval) {
+      p->in_alarm = 1;//set in_alarm 1 to avoid repeatly call handler
+      *p->alarmframe = *p->trapframe;//save current trapframe to restore
       p->trapframe->epc = (uint64)p->alarm_handler;  //let p jump to alarm_handler
       p->ticks_since_last_alarm = 0;//reset ticks
     }

@@ -132,6 +132,13 @@ found:
     return 0;
   }
 
+  // Allocate a alarmframe page. 
+  if((p->alarmframe = (struct trapframe *)kalloc()) == 0){
+    freeproc(p);
+    release(&p->lock);
+    return 0;
+  }
+
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
@@ -149,9 +156,10 @@ found:
   p->tracemask = 0;//init tracemask
 
   
-  p->alarm_interval = 0;//init alarm_interval
-  p->alarm_handler = 0;//init alarm_handler
-  p->ticks_since_last_alarm = 0;//init ticks_since_last_alarm
+  p->alarm_interval = 0;//init alarm_interval as 0
+  p->alarm_handler = 0;//init alarm_handler as 0
+  p->ticks_since_last_alarm = 0;//init ticks_since_last_alarm as 0
+  p->in_alarm = 0;//init in_alarm as 0
 
   return p;
 }
@@ -165,6 +173,9 @@ freeproc(struct proc *p)
   if(p->trapframe)
     kfree((void*)p->trapframe);
   p->trapframe = 0;
+  if(p->alarmframe)
+    kfree((void*)p->alarmframe);
+  p->alarmframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;

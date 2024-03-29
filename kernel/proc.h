@@ -107,6 +107,8 @@ struct proc {
   uint64 tracemask;            // the num of sys trace 
 
   int alarm_interval;            
-  void (*alarm_handler)();
+  void (*alarm_handler)();     // handler function
   int ticks_since_last_alarm;
+  struct trapframe *alarmframe;// store the origin ins to return
+  int in_alarm;                // whether in alarm_handler
 };
