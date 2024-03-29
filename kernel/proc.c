@@ -148,6 +148,11 @@ found:
 
   p->tracemask = 0;//init tracemask
 
+  
+  p->alarm_interval = 0;//init alarm_interval
+  p->alarm_handler = 0;//init alarm_handler
+  p->ticks_since_last_alarm = 0;//init ticks_since_last_alarm
+
   return p;
 }
 

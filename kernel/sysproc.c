@@ -126,3 +126,20 @@ sys_sysinfo(void) {
   }
   return 0;
 }
+
+uint64
+sys_sigalarm(void) {
+  int interval;
+  uint64 handler;
+  argint(0, &interval);
+  argaddr(1, &handler);
+  myproc()->alarm_interval = interval;
+  myproc()->alarm_handler = (void (*)()) handler;
+  myproc()->ticks_since_last_alarm = 0;
+  return 0;
+}
+
+uint64
+sys_sigreturn(void) {
+  return 0;
+}
