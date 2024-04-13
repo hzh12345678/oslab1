@@ -1,0 +1,9 @@
+OSLAB3-threads-report
+将conf/lab.mk的lab编号改成thread以告知Makefile我们开始了thread一节的实验。
+实验1：Uthread 实现用户态线程切换
+在这个实验中，我们要实现用户态的线程切换，可以参考内核态的线程切换， 将user/uthread_switch.S缺失的代码从kernel/swtch.S中的代码粘贴过来并修改它的函数名为thread_switch，以便之后在uthread.c中使用。
+然后我们需要在uthread.c中构造出每个thread用来保存用户态线程寄存器状态的结构thread_context，其保存了所有的寄存器，它们是uthread_switch.S中的所有操作的寄存器，在thread结构体中加上这个thread_context结构。
+然后将thread_create()和thread_schedule()函数补全，其中thread_schedule()利用user/uthread_switch.S中实现的thread_switch()函数实现在线程切换时保存旧线程的寄存器内容并load新线程的寄存器内容即可。thread_create()函数要做的是在all_thread中找到一个free的线程然后将新的线程放在这里，初始化这个线程，state为runnable，stack全初始化为0，thread_context的s1到s11初始化为0，sp(stack pointer)初始化为栈顶，ra(return address)初始化为func。
+实验2：Pthread 实现多线程同步
+    在这个实验中，我们要消除ph.c中哈希表的put和get函数的竟态现象，只需要初始化一组互斥锁，在每个节点被访问（即被调用put或get）的时候用互斥锁锁住这个节点，就能够保证每个节点不会同时被两个函数访问，从而消除了问题。
+  然后我们要实现barrier，它的作用是调用这个函数的线程会阻碍在这里直到所有的线程调用它，所以我们锁住这个barrier的互斥锁，每调用一次barrier，让计线程数的变量即这个barrier的nthread加1，如果还没有达到nthread，就等待，如果达到nthread，则进入新的一轮，把barrier的nthread重置为0，轮数加1，广播给所有在等待的线程，然后这些线程解锁，可以进入之后的运行。
