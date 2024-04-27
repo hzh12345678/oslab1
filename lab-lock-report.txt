@@ -1,0 +1,21 @@
+lock实验报告
+
+lab1:Memory allocator
+
+在这个实验中，我们要实现让每个CPU核都有自己的空闲列表，当自己的空闲列表为空时，窃取其他的CPU。
+我们需要给每个CPU空闲列表一个锁，以避免单个空闲列表单个锁。
+我们将kmem的结构改成有NCPU个锁和空闲列表，
+将所有的kmem出现的地方作相应的修改，
+包括初始化，上锁，解锁，分配和释放空闲列表，
+在分配空间时，如果发现该CPU空闲列表用完，就窃取其他的CPU的空闲列表。
+
+在这个环节，我的整个系统出现了一些问题，后来发现我的makefile文件除了问题，
+具体是我在上次实验中在makefile中添加了uthread命令，
+在上次的实验没有出现问题，但是当修改lab=lock后make qemu报错，
+把这一点改正后代码正常。
+
+lab2:Buffer Cache
+
+在此实验中，我们把cache结构改成多个bucket，每个bucket中有多个buffer，
+注意到实验要求，在bget中，先查找有无对应的buf，如果没有，就在这个bucket中找一个refcnt=0的buf占据，
+然后把其他用到bcache的代码修改成使用对应blockno的hash值的bcache即可。
