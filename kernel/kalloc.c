@@ -19,14 +19,19 @@ struct run {
 };
 
 struct {
-  struct spinlock lock;
-  struct run *freelist;
+  struct spinlock lock[NCPU];
+  struct run *freelist[NCPU];
 } kmem;
 
 void
 kinit()
 {
-  initlock(&kmem.lock, "kmem");
+  for(int i = 0; i < NCPU; i++){
+    char fmt[8] = {'k','m','e','m','_','0','\0'};
+    char id = i + '0';
+    fmt[5] = id;
+    initlock(&kmem.lock[i], fmt);
+  }
   freerange(end, (void*)PHYSTOP);
 }
 
@@ -56,10 +61,15 @@ kfree(void *pa)
 
   r = (struct run*)pa;
 
-  acquire(&kmem.lock);
-  r->next = kmem.freelist;
-  kmem.freelist = r;
-  release(&kmem.lock);
+  push_off();
+
+  int cpu = cpuid();
+  acquire(&kmem.lock[cpu]);
+  r->next = kmem.freelist[cpu];
+  kmem.freelist[cpu] = r;
+  release(&kmem.lock[cpu]);
+
+  pop_off();
 }
 
 // Allocate one 4096-byte page of physical memory.
@@ -70,14 +80,34 @@ kalloc(void)
 {
   struct run *r;
 
-  acquire(&kmem.lock);
-  r = kmem.freelist;
+  push_off();
+  int cpu = cpuid();
+  int steal = cpu;
+
+  acquire(&kmem.lock[cpu]);
+  r = kmem.freelist[cpu];
   if(r)
-    kmem.freelist = r->next;
-  release(&kmem.lock);
+    kmem.freelist[cpu] = r->next;
+  release(&kmem.lock[cpu]);
+
+  if (r == 0) {
+    for (int i = 1; i < NCPU; i++) {
+      steal = (cpu + i) % NCPU;
+      acquire(&kmem.lock[steal]);
+      r = kmem.freelist[steal];
+      if (r) {
+        kmem.freelist[steal] = r->next;
+      }
+      release(&kmem.lock[steal]);
+      if (r) {
+        break;
+      }
+    }
+  }
 
   if(r)
     memset((char*)r, 5, PGSIZE); // fill with junk
+  pop_off();
   return (void*)r;
 }
 
@@ -85,12 +115,14 @@ uint64
 kfree_mem(void) {//return the number of free memory
   struct run *r;
   uint64 freemem = 0;
-  acquire(&kmem.lock);//lock
-  r = kmem.freelist;
-  while (r) {
-    freemem += PGSIZE;
-    r = r->next;  //traver the list
-  }
-  release(&kmem.lock);//unlock
+  for(int cpu = 0;cpu < NCPU;cpu++){
+    acquire(&kmem.lock[cpu]);
+    r = kmem.freelist[cpu];
+    while(r){
+        freemem += PGSIZE;
+        r = r->next;
+    }
+    release(&kmem.lock[cpu]);
+    }
   return freemem;
 }
