@@ -111,4 +111,5 @@ struct proc {
   int ticks_since_last_alarm;
   struct trapframe *alarmframe;// store the origin ins to return
   int in_alarm;                // whether in alarm_handler
+  struct usyscall *usyscallpage; //share page between kernel and user
 };
