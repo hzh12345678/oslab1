@@ -147,6 +147,7 @@ found:
 
   p->usyscallpage->pid = p->pid;
   // An empty user page table.
+
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
     freeproc(p);
@@ -211,7 +212,7 @@ proc_pagetable(struct proc *p)
     return 0;
 
   if(mappages(pagetable, USYSCALL, PGSIZE,
-              (uint64)p->usyscallpage, PTE_U | PTE_R) < 0){
+              (uint64)p->usyscallpage, PTE_R | PTE_U) < 0){
     uvmfree(pagetable, 0);
     return 0;
   }
