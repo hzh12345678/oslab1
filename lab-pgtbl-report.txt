@@ -1,0 +1,26 @@
+pgtbl实验报告
+
+Task 1 improve getpid()
+
+这个实验只需要按照实验的提示依次补全代码，先在proc结构体中加上usyscall指针usyscallpage， 然后在allocproc()中，为usyscallpage分配内存，并初始化其保存当前进程的pid，
+在proc_pagetable()中执行映射，仿照映射TRAPOLINE和TRAPFRAME的代码映射USYSCALL，权限设置为PTE_U和PTE_R，
+在freeproc()中释放进程内存时，将usyscallpage所指的内存也释放，
+在proc_freepagetable()中解除映射时，将USYSCALL位置上的映射也解除，
+然后运行pgtbltest通过getpid测试。
+
+在allocproc()函数中，我犯了一个错误，我应该先给usyscallpage分配空间并初始化pid再用proc_pagetable执行映射，
+然而我错误的弄反了顺序，导致pgtbltest时报usertrap，
+调整顺序后正确。
+
+Task 2 在启动xv6时打印页表内容
+
+这个实验按照实验提示，在defs.h中声明函数，在exec.c对应位置加上函数调用，
+在vm.c中实现vmprint()，函数的结构和freewalk一样，用一个静态变量表示深度，在对应的深度输出对应格式的页表信息。
+表示深度的静态变量进入下一级页表就将其加一，函数返回就减一。
+
+Task 3 检查哪些页已经被访问
+
+在riscv.h中加上PTE_A位的宏定义，函数接收三个参数。第一：被检查的第一个用户页的起始虚拟地址，第二：被检查页面的数量，第三：接收来自用户地址空间的一个buffer地址，用一个数字mask代表结果，
+用argaddr()和argint()获取参数，然后从起始地址开始，每次增加一个PGSIZE，直到达到检查页面数量个，每次调用walk函数，找到pte，
+检查PTE_A位是否为1，如果是，就将mask对应的i位设为1，然后把PTE_A位清零。最后把mask使用copyout拷贝到用户空间。
+运行pgtbltest通过测试。
