@@ -139,6 +139,7 @@ found:
     return 0;
   }
   
+  #ifdef LAB_PGTBL
   if((p->usyscallpage = (struct usyscall *)kalloc()) == 0){
     freeproc(p);
     release(&p->lock);
@@ -146,6 +147,7 @@ found:
   }
 
   p->usyscallpage->pid = p->pid;
+  #endif
   // An empty user page table.
 
   p->pagetable = proc_pagetable(p);
@@ -211,11 +213,13 @@ proc_pagetable(struct proc *p)
   if(pagetable == 0)
     return 0;
 
+  #ifdef LAB_PGTBL
   if(mappages(pagetable, USYSCALL, PGSIZE,
               (uint64)p->usyscallpage, PTE_R | PTE_U) < 0){
     uvmfree(pagetable, 0);
     return 0;
   }
+  #endif
 
   // map the trampoline code (for system call return)
   // at the highest user virtual address.
@@ -246,7 +250,9 @@ proc_freepagetable(pagetable_t pagetable, uint64 sz)
 {
   uvmunmap(pagetable, TRAMPOLINE, 1, 0);
   uvmunmap(pagetable, TRAPFRAME, 1, 0);
+  #ifdef LAB_PGTBL
   uvmunmap(pagetable, USYSCALL, 1, 0);
+  #endif
   uvmfree(pagetable, sz);
 }
 

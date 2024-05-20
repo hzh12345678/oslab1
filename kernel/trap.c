@@ -65,6 +65,40 @@ usertrap(void)
     intr_on();
 
     syscall();
+  } else if (r_scause() == 15) {
+    	uint64 va = r_stval();
+	if(va >= MAXVA){
+		printf("usertrap(): cowalloc: exceed MAXVA\n");
+		setkilled(p);
+    exit(-1);
+	}
+	pte_t *pte = walk(p->pagetable,va,0);
+	if(pte == 0){
+		printf("usertrap(): cowalloc: pte not exist\n");
+		setkilled(p);
+    exit(-1);
+	}
+	if((*pte & PTE_V) == 0 || (*pte & PTE_U) == 0){
+		printf("usertrap(): cowalloc: pte permission err\n");
+		setkilled(p);
+    exit(-1);
+	}
+	if(((*pte) & (PTE_RSW)) == 0){
+		printf("usertrap(): cowalloc: not cow\n");
+		setkilled(p);
+    exit(-1);
+	}
+	uint64 pa_child;
+	if((pa_child =(uint64)kalloc()) == 0){
+		printf("usertrap(): cowalloc: kalloc fails\n");
+		setkilled(p);
+    exit(-1);
+	}
+	uint64 pa_old = PTE2PA(*pte);
+	memmove((void *)pa_child,(void *)pa_old,PGSIZE);
+	kfree((void *)pa_old);
+	*pte = PA2PTE(pa_child) | PTE_FLAGS(*pte) | PTE_W;
+  *pte &= ~PTE_RSW;
   } else if((which_dev = devintr()) != 0){
     // ok
   } else {

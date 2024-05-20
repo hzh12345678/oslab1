@@ -72,6 +72,10 @@ void*           kalloc(void);
 void            kfree(void *);
 void            kinit(void);
 uint64          kfree_mem(void);
+int             get_cow_count(uint64);
+void            cow_up(uint64);
+int             cow_down(uint64);
+void            cow_set_one(uint64);
 
 // log.c
 void            initlog(int, struct superblock*);
