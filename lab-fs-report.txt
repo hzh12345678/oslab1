@@ -1,0 +1,19 @@
+file system实验报告
+
+#bigfile
+
+任务要求将inode中的一个direct block改成一个doubly_indirect block，
+要先修改fs.h和file.h中的direct block数量，将其减一，然后将最大文件块数改成有doubly_indirect block时的块数，
+以及修改addrs数组的数量确保数组中的元素数量相同。
+然后修改bmap和itrunc函数，加上doubly_indirect block的代码，仿照单层间接的代码即可。
+
+#symlink
+
+任务要求添加符号链接到xv6，需要实现symlink(char *target, char *path)，它在path创建一个新符号链接，指向名为target的文件，
+按照实验提示，添加symlink对应的条目到usys.pl,user.h,syscall.c,在fcntl.h中添加O_NOFOLLOW标志，在stat.h中添加inode的type为T_SYMLINK，
+在kernel/sysfile.c中实现sys_symlink函数，修改sys_open函数。
+实现的sys_symlink函数作用是在path处创建指向target的新符号链接，
+然后在sys_open函数中处理路径指向符号链接的情况，如果文件不存在，open失败。
+如果传入的path是一个软链接, 采用递归寻址, 直到找到第一个不是软链接的path (如果递归层数太高, 就认为链接形成了循环, 返回-1)，
+为了实现如果用户在打开文件时添加了O_NOFOLLOW模式，那么系统需要像处理正常文件一样将软链接文件打开，
+需要检测omode是否有O_NOFOLLOW标志。
